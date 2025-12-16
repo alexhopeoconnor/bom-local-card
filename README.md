@@ -1,3 +1,10 @@
+<p align="center">
+  <img
+    src="https://github.com/user-attachments/assets/5f352818-aab0-4087-a604-856641abe0b2"
+    width="500"
+  />
+</p>
+
 # BOM Local Radar Card
 
 A Home Assistant custom card that displays Australian Bureau of Meteorology (BOM) rain radar data using the local [BOM Local Service](https://github.com/alexhopeoconnor/bom-local-service).
