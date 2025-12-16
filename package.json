@@ -1,7 +1,7 @@
 {
   "name": "bom-local-radar-card",
-  "version": "1.0.0",
-  "description": "A rain radar card using the local BOM service",
+  "version": "0.0.1",
+  "description": "Home Assistant custom card for displaying Australian Bureau of Meteorology (BOM) rain radar data with animated slideshow and historical data support",
   "module": "bom-local-radar-card.js",
   "keywords": [
     "home-assistant",
@@ -11,8 +11,14 @@
     "lovelace",
     "custom-cards",
     "bom",
+    "bureau-of-meteorology",
     "radar",
-    "weather"
+    "weather",
+    "australia",
+    "rain",
+    "precipitation",
+    "meteorology",
+    "hacs"
   ],
   "repository": {
     "type": "git",
