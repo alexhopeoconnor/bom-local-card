@@ -1,6 +1,6 @@
 {
   "name": "bom-local-card",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Home Assistant custom card for displaying Australian Bureau of Meteorology (BOM) rain radar data with animated slideshow and historical data support",
   "module": "bom-local-card.js",
   "keywords": [
