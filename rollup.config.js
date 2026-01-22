@@ -8,7 +8,7 @@ const isProd = process.env.NODE_ENV === 'production';
 export default {
   input: 'src/bom-local-card.ts',
   output: {
-    file: 'custom_components/bom_local/www/bom-local-card.js',
+    file: 'dist/bom-local-card.js',
     format: 'es',
     sourcemap: !isProd,
   },

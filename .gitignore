@@ -2,8 +2,9 @@
 node_modules/
 
 # Build outputs
-dist/
+# dist/ - Not ignored: HACS needs access to built files
 *.js.map
+dist/*.js.map
 custom_components/bom_local/www/*.js.map
 
 # Environment files
