@@ -6,6 +6,16 @@
 
 A Home Assistant custom card that displays Australian Bureau of Meteorology (BOM) rain radar data using the local [BOM Local Service](https://github.com/alexhopeoconnor/bom-local-service).
 
+## Installation
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=alexhopeoconnor&repository=bom-local-card&category=Integration)
+
+OR
+
+1. Install HACS - [Instructions](https://www.hacs.xyz/docs/use/download/download/)
+2. Add the custom repo to your HACS Store - [Instructions](https://www.hacs.xyz/docs/faq/custom_repositories/)
+3. Add the integration to Home Assistant by searching for "BOM Local Card" in the HACS Store
+
 ## Background
 
 The Australian Bureau of Meteorology's radar API endpoint stopped working in December 2024, breaking integrations like the popular [bom-radar-card](https://github.com/Makin-Things/bom-radar-card) for Home Assistant. This card provides a replacement solution that displays BOM radar data by connecting to the [BOM Local Service](https://github.com/alexhopeoconnor/bom-local-service), which caches radar data locally and provides it via a REST API.
