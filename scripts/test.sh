@@ -132,6 +132,51 @@ if [ -z "$USE_DOCKER_BUILD" ] && [ -z "$USE_NPM_BUILD" ]; then
     fi
 fi
 
+ensure_test_ha_config() {
+    if [ ! -f "test-ha/configuration.yaml" ]; then
+        echo "❌ Error: test-ha/configuration.yaml not found"
+        echo "   This test harness expects local Home Assistant seed data in test-ha/"
+        exit 1
+    fi
+}
+
+# Write docker-compose override for local service build (single place; avoids create/rm/create on cold start)
+write_service_compose_override() {
+    cat > docker-compose.test.local.yml <<EOF
+services:
+  bom-local-service:
+    build:
+      context: $SERVICE_PATH
+      dockerfile: Dockerfile
+    image: bom-local-service:local-test
+EOF
+}
+
+sync_test_ha_file() {
+    local file_name="$1"
+    local source_path="test-ha/$file_name"
+    local target_path="test-ha/config/$file_name"
+
+    if [ ! -f "$source_path" ]; then
+        echo "   ⚠️  Warning: $source_path not found, skipping..."
+        return 0
+    fi
+
+    if cp "$source_path" "$target_path" 2>/dev/null; then
+        echo "   ✅ Updated $file_name"
+        return 0
+    fi
+
+    echo "   🔐 Retrying $file_name update via Docker (root-owned target)..."
+    docker run --rm \
+        -v "$(pwd)/test-ha:/workspace:rw" \
+        -u root \
+        alpine:latest \
+        sh -c "cp \"/workspace/$file_name\" \"/workspace/config/$file_name\"" >/dev/null
+
+    echo "   ✅ Updated $file_name"
+}
+
 # Function to build using npm (local)
 build_with_npm() {
     echo "🔨 Building card with npm (local)..."
@@ -159,7 +204,6 @@ build_with_docker() {
         exit 1
     fi
     
-    # Pass FORCE_REBUILD if FORCE_BUILD is set
     if [ "$FORCE_BUILD" = "1" ]; then
         FORCE_REBUILD=1 bash scripts/build-docker.sh
     else
@@ -177,10 +221,6 @@ if [ "$SKIP_BUILD" = "1" ]; then
         exit 1
     fi
 elif [ "$FORCE_BUILD" = "1" ] || [ ! -f "$CARD_BUILD_PATH" ]; then
-    # If FORCE_BUILD is set, also force Docker rebuild
-    if [ "$FORCE_BUILD" = "1" ] && [ "$USE_DOCKER_BUILD" = "1" ]; then
-        export FORCE_REBUILD=1
-    fi
     if [ "$USE_DOCKER_BUILD" = "1" ]; then
         build_with_docker
     elif [ "$USE_NPM_BUILD" = "1" ]; then
@@ -220,19 +260,6 @@ else
     echo "   (Use --force-build to rebuild, --docker-build or --npm-build to specify method)"
 fi
 
-# If SERVICE_PATH is set, create override file for local service build
-if [ -n "$SERVICE_PATH" ] && [ ! -f "docker-compose.test.local.yml" ]; then
-    OVERRIDE_FILE="docker-compose.test.local.yml"
-    cat > "$OVERRIDE_FILE" <<EOF
-services:
-  bom-local-service:
-    build:
-      context: $SERVICE_PATH
-      dockerfile: Dockerfile
-    image: bom-local-service:local-test
-EOF
-fi
-
 # Check if containers are already running
 CONTAINERS_RUNNING=0
 COMPOSE_FILES_CHECK="-f docker-compose.test.yml"
@@ -252,12 +279,10 @@ if [ "$CONTAINERS_RUNNING" = "1" ]; then
     echo "📋 Integration is mounted directly, no file copy needed."
     
     # Copy configuration files to HA config directory (for dashboard changes)
+    ensure_test_ha_config
     echo "📋 Updating HA configuration files..."
     for config_file in configuration.yaml ui-lovelace.yaml; do
-        if [ -f "test-ha/$config_file" ]; then
-            cp "test-ha/$config_file" "test-ha/config/$config_file"
-            echo "   ✅ Updated $config_file"
-        fi
+        sync_test_ha_file "$config_file"
     done
     
     # Restart HA to pick up changes
@@ -280,19 +305,10 @@ if [ "$CONTAINERS_RUNNING" = "1" ]; then
     if [ -n "$SERVICE_PATH" ]; then
         echo "🔨 Rebuilding service from local source: $SERVICE_PATH"
         
-        # Ensure override file exists for local service build
-        OVERRIDE_FILE="docker-compose.test.local.yml"
-        if [ ! -f "$OVERRIDE_FILE" ]; then
-            cat > "$OVERRIDE_FILE" <<EOF
-services:
-  bom-local-service:
-    build:
-      context: $SERVICE_PATH
-      dockerfile: Dockerfile
-    image: bom-local-service:local-test
-EOF
+        if [ ! -f "docker-compose.test.local.yml" ]; then
+            write_service_compose_override
         fi
-        COMPOSE_FILES="$COMPOSE_FILES -f $OVERRIDE_FILE"
+        COMPOSE_FILES="$COMPOSE_FILES -f docker-compose.test.local.yml"
         
         # Rebuild service - Docker's cache will detect source file changes automatically
         # Only use --no-cache if explicitly needed (it's much slower)
@@ -357,16 +373,11 @@ fi
 # Normal mode - full setup (containers not running)
 echo "🚀 Setting up fresh test environment..."
 echo "🐳 Stopping any existing containers..."
-# Clean up any existing override files
+# Remove stale override so cold start always matches SERVICE_PATH handling below
 rm -f docker-compose.test.local.yml
 
-# Determine compose files to use
+# Base compose file is enough to stop this project's containers (override was just removed)
 COMPOSE_FILES_CLEAN="-f docker-compose.test.yml"
-if [ -f "docker-compose.test.local.yml" ]; then
-    COMPOSE_FILES_CLEAN="$COMPOSE_FILES_CLEAN -f docker-compose.test.local.yml"
-fi
-
-# Stop and remove containers (preserve volumes to keep cache)
 docker compose $COMPOSE_FILES_CLEAN down 2>/dev/null || docker-compose $COMPOSE_FILES_CLEAN down 2>/dev/null || true
 
 # Preserve .storage directory to keep user accounts and HA state
@@ -380,14 +391,12 @@ mkdir -p test-ha/cache
 # Integration is mounted directly, skipping redundant copy
 echo "📋 Integration is mounted directly."
 
+ensure_test_ha_config
+
 # Copy configuration files to HA config directory
 echo "📋 Copying HA configuration files..."
 for config_file in configuration.yaml ui-lovelace.yaml; do
-    if [ ! -f "test-ha/$config_file" ]; then
-        echo "   ⚠️  Warning: test-ha/$config_file not found, skipping..."
-        continue
-    fi
-    cp "test-ha/$config_file" "test-ha/config/$config_file"
+    sync_test_ha_file "$config_file"
 done
 
 # Create onboarding bypass - skip everything EXCEPT user creation
@@ -424,20 +433,8 @@ fi
 DOCKER_COMPOSE_FILES="-f docker-compose.test.yml"
 if [ -n "$SERVICE_PATH" ]; then
     echo "🔨 Building service from local source: $SERVICE_PATH"
-    
-    # Create docker-compose override file for local service build
-    OVERRIDE_FILE="docker-compose.test.local.yml"
-    cat > "$OVERRIDE_FILE" <<EOF
-services:
-  bom-local-service:
-    build:
-      context: $SERVICE_PATH
-      dockerfile: Dockerfile
-    image: bom-local-service:local-test
-    # Remove image specification when building
-EOF
-    
-    DOCKER_COMPOSE_FILES="$DOCKER_COMPOSE_FILES -f $OVERRIDE_FILE"
+    write_service_compose_override
+    DOCKER_COMPOSE_FILES="$DOCKER_COMPOSE_FILES -f docker-compose.test.local.yml"
     
     # Build service - Docker's cache will detect source file changes automatically
     # The Dockerfile is structured to cache dependencies, so only changed source files trigger rebuilds
