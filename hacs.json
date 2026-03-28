@@ -1,4 +1,6 @@
 {
-  "name": "BOM Local Radar",
-  "render_readme": true
+  "name": "BOM Local Radar Card",
+  "render_readme": true,
+  "filename": "bom-local-card.js",
+  "homeassistant": "2024.1.0"
 }
