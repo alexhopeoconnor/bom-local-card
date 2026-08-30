@@ -1073,7 +1073,7 @@ BomLocalRadarCardEditor = __decorate([
     t$1('bom-local-card-editor')
 ], BomLocalRadarCardEditor);
 
-const CARD_VERSION = '0.3.0';
+const CARD_VERSION = '0.3.1';
 const DEFAULT_FRAME_INTERVAL = 2.0; // seconds
 const DEFAULT_RESTART_DELAY = 2000; // ms (pause before looping)
 const DEFAULT_REFRESH_INTERVAL = 30; // seconds
