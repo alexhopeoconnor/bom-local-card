@@ -32,6 +32,7 @@ The Australian Bureau of Meteorology's radar API endpoint stopped working in Dec
 - **Home Assistant**: Version 2024.1.0 or later
 - **Docker**: Required to run the BOM Local Service (Docker Engine 20.10+ or Docker Desktop)
 - **BOM Local Service**: Must be installed and running (covered in installation steps below)
+- **Node.js 20+**: Required only for a local frontend build; the supplied Docker builder uses Node.js 20.
 
 ## Installation
 
@@ -535,7 +536,7 @@ For more advanced testing options:
 ```
 
 **Options:**
-- `--skip-build` - Skip building the card (use existing dist file)
+- `--skip-build` - Skip building the card (use the existing generated card bundle)
 - `--force-build` - Force rebuild of the card (no cache)
 - `--docker-build` - Use Docker to build the card
 - `--npm-build` - Use npm to build the card (requires local Node.js)
@@ -563,19 +564,30 @@ If you prefer to build manually:
 
 2. **Install dependencies:**
    ```bash
-   npm install
+   npm ci
    ```
 
 3. **Build the card:**
    ```bash
    npm run build
    ```
-   The built file will be in `dist/bom-local-card.js`
+   The built file is `custom_components/bom_local/www/bom-local-card.js`.
 
 4. **Development with watch mode:**
    ```bash
    npm run watch
    ```
+
+### Release checklist
+
+For a production card release, keep the version in `package.json`,
+`package-lock.json`, `src/const.ts`, and
+`custom_components/bom_local/manifest.json` aligned. Then run `npm ci`, build
+both development and production bundles, review the generated
+`custom_components/bom_local/www/bom-local-card.js`, commit the source and
+generated bundle together, and create the matching immutable `vX.Y.Z` Git tag.
+The card's frontend cache query must be updated by the consuming Home Assistant
+deployment in the same reviewed change.
 
 ### Test Environment Details
 

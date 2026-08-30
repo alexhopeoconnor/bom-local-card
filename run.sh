@@ -60,7 +60,7 @@ build_card() {
             echo "📦 Installing dependencies..."
             # Ensure devDependencies are installed even if we're building for prod
             # because we need rollup/plugins to build.
-            npm install
+            npm ci
         fi
         
         NODE_ENV="$target_env" npm run build
@@ -241,4 +241,3 @@ case "$COMMAND" in
         exit 1
         ;;
 esac
-

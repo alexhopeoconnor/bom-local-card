@@ -89,7 +89,7 @@ export class BomControlsSection extends LitElement {
             type="range" 
             class="frame-slider" 
             min="0" 
-            max="${this.frames.length - 1}" 
+            max="${this.frames.length - 1}"
             .value="${this.currentFrameIndex}"
             @input="${(e: Event) => {
               const index = parseInt((e.target as HTMLInputElement).value);
@@ -241,4 +241,3 @@ declare global {
     'bom-controls-section': BomControlsSection;
   }
 }
-

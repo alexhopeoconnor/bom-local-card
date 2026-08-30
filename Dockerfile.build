@@ -4,14 +4,13 @@ FROM node:20-alpine
 
 WORKDIR /build
 
-# Copy package files first for better caching
-COPY package*.json ./
+# Copy the declared dependency set first for a reproducible cached build.
+COPY package.json package-lock.json ./
 COPY tsconfig.json ./
 COPY rollup.config.js ./
 
-# Install dependencies (including devDependencies)
-# Use npm install since we may have updated package.json
-RUN npm install
+# Install the exact locked dependencies, including the build-only toolchain.
+RUN npm ci
 
 # Copy source files
 COPY src/ ./src/
@@ -20,4 +19,3 @@ COPY src/ ./src/
 # This ensures the build runs when the container starts, not during image creation
 # Use BUILD_TARGET to allow running "watch" or other scripts
 CMD ["sh", "-c", "npm run ${BUILD_TARGET:-build}"]
-

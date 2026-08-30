@@ -593,7 +593,7 @@ export class BomLocalRadarCard extends LitElement implements LovelaceCard {
             ? html`
                 <img 
                   class="radar-image radar-image-${fit}"
-                  src="${currentFrameUrl}" 
+                  src="${currentFrameUrl}"
                   alt="Radar frame ${this.currentFrameIndex}"
                   style="transform: scale(${zoom}); transform-origin: center center;"
                   @error="${() => { 
@@ -679,7 +679,7 @@ export class BomLocalRadarCard extends LitElement implements LovelaceCard {
 
     return html`
       <ha-card 
-        .header=${cardTitle} 
+        .header=${cardTitle}
         tabindex="0" 
         role="region" 
         aria-label="BOM Radar Card"
@@ -716,7 +716,6 @@ export class BomLocalRadarCard extends LitElement implements LovelaceCard {
 if (!customElements.get('bom-local-card')) {
   customElements.define('bom-local-card', BomLocalRadarCard);
 }
-
 
 
 

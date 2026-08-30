@@ -1,7 +1,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -28,7 +28,7 @@ export default {
       declaration: false,
     }),
     isProd && terser({
-      output: {
+      format: {
         comments: false,
       },
     }),
@@ -36,7 +36,6 @@ export default {
   // Dependencies are bundled (not external) so the card works in HA
   // HA doesn't provide lit or custom-card-helpers globally
 };
-
 
 
 
