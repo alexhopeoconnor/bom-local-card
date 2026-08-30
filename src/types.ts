@@ -96,8 +96,12 @@ export interface ErrorState {
 
 // Grid options for HA sections view
 export interface GridOptions {
-  columns: number;
-  rows: number;
+  columns?: number;
+  /**
+   * A fixed row count. Omit this for content whose height changes after it is
+   * rendered, such as a radar image loaded asynchronously.
+   */
+  rows?: number;
   min_columns?: number;
   min_rows?: number;
   max_columns?: number;
@@ -148,7 +152,6 @@ export interface BomLocalRadarCardConfig extends LovelaceCardConfig {
   // Localization
   locale?: string;  // Override locale (defaults to HA locale)
 }
-
 
 
 

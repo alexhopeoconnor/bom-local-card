@@ -122,25 +122,18 @@ export class BomLocalRadarCard extends LitElement implements LovelaceCard {
 
   /**
    * Define grid options for HA's sections view
-   * This allows the card to integrate with HA's grid system
+   *
+   * The radar image and its metadata load asynchronously and have responsive
+   * minimum heights. Supplying rows here would make Home Assistant reserve a
+   * fixed, much smaller grid area, then let the completed card paint over the
+   * following section. Deliberately provide width guidance only and let the
+   * Sections view measure the card's natural height.
    */
   public getGridOptions(): GridOptions {
-    // Calculate based on whether controls are visible
-    const hasControls = this._shouldShowControls();
-    const hasMetadata = this._shouldShowMetadata();
-    
-    // Base size: 6 columns (half width), 2 rows
-    // Adjust based on content
-    const baseRows = 2;
-    const additionalRows = (hasControls ? 1 : 0) + (hasMetadata ? 0.5 : 0);
-    
     return {
       columns: 6,  // Default: half width
-      rows: baseRows + additionalRows,
       min_columns: 3,  // Minimum: quarter width
-      min_rows: 2,     // Minimum: always show image
       max_columns: 12, // Can span full width
-      max_rows: 8,     // Can be tall for detailed view
     };
   }
 
@@ -723,7 +716,6 @@ export class BomLocalRadarCard extends LitElement implements LovelaceCard {
 if (!customElements.get('bom-local-card')) {
   customElements.define('bom-local-card', BomLocalRadarCard);
 }
-
 
 
 
